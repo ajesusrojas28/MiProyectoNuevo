@@ -1,45 +1,27 @@
+import { getShowData, getEpisodeList } from "./services/tvmaze.js";
 
-import data from "./data.json";
-import mifuncion, { HELLO } from "./modules/modulo.js";
+const ID = "32938";
 
-console.log(HELLO);
-console.log(mifuncion());
+const show = await getShowData(ID);
+const seasons = await getEpisodeList(ID);
 
-const nuevoArreglo = data.users.filter((user) => user.age > 25);
+const $header = document.querySelector("header");
+const $episodes = document.querySelector(".episodes");
 
+$header.setHTMLUnsafe(`
+  <img class="poster" src="${show.image}">
+  <h1>${show.name}</h1>
+`);
 
-const usersList = document.querySelector("#users");
-const taskInput = document.querySelector(".taskInput");
-const taskButton = document.querySelector(".taskButton");
+const createEpisodeHTML = (episode) =>
+  `<div class="episode episode-${episode.number} rating-${Math.floor(episode.rating)}">${episode.number}</div>`;
 
-taskButton.addEventListener("click", (e) => {
-    console.log(taskInput.value);
+const createSeasonHTML = (data, number) => `
+  <article class="season">
+    <header class="season-header">T${number}</header>
+    ${data.map(createEpisodeHTML).join("")}
+  </article>
+`;
 
-    // Agregar un nuevo usuario al arreglo de usuarios
-    data.users.push({
-        name: taskInput.value,
-        age: 30
-    });
-
-// Mostrar los usuarios actualizados
-   mostrarUsuarios();
-   // Limpiar el campo de entrada después de agregar el usuario
-   taskInput.value = "";
-});
-
-mostrarUsuarios();
-
-function mostrarUsuarios(){
-    
-    // Limpiar la lista antes de mostrar los usuarios
-    usersList.innerHTML = "";
-
-    // Mostrar los usuarios en la lista
-    data.users.forEach((user) =>{
-    
-        console.log(user.name);
-        usersList.insertAdjacentHTML("beforeend", `<li>${user.name}</li>`); //mejorar esto
-    
-    });
-
-}
+const list = Object.values(seasons).map((season, index) => createSeasonHTML(season, index + 1));
+$episodes.setHTMLUnsafe(list.join(""));
